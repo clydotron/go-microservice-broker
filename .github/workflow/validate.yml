@@ -1,0 +1,45 @@
+name: Test and Lint broker service
+on: [push,workflow_dispatch]
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.3'
+      - run: go test ./...
+      - run: golint ./cmd/...
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      exe-file-name: ${{ steps.publish.outputs.exe-file-name }}
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.3'
+      - run: mkdir dist
+      - run: env GOOS=linux CGO_ENABLED=0 go build -o ./dist/brokerService ./cmd/api
+      - name: Publish exe name
+        id: publish
+        run: echo "exe-file-name=brokerService" >> $GITHUB_OUTPUT
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output file
+        run: echo "${{ needs.build.outputs.exe-file-name}}"
+      - name: Deploy
+        run: echo "Deploying..."
