@@ -1,4 +1,4 @@
-name: Test and Lint broker service
+name: Lint and Test broker service
 on: [push,workflow_dispatch]
 jobs:
   lint:
