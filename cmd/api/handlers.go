@@ -63,7 +63,6 @@ func (app *App) Broker(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	var payload requestPayload
-	log.Println("HandleSubmission >>>>")
 	if err := helpers.ReadJSON(w, r, &payload); err != nil {
 		_ = helpers.ErrorJSON(w, err)
 		return
@@ -72,11 +71,9 @@ func (app *App) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	log.Println("HandleSubmission: ", payload.Action)
 	switch payload.Action {
 	case "auth":
-		//app.authenticate(w, payload.Auth)
 		app.authenticateViaGRPC(w, payload.Auth)
 
 	case "log":
-		//app.logItem(w, payload.Log)
 		app.logItemRPC(w, payload.Log)
 	default:
 		_ = helpers.ErrorJSON(w, errors.New("unknown action"))
@@ -90,7 +87,7 @@ func sendResponse(w http.ResponseWriter, err bool, msg string, data any) {
 		Message: msg,
 		Data:    data,
 	}
-	helpers.WriteJSON(w, http.StatusAccepted, payload)
+	_ = helpers.WriteJSON(w, http.StatusAccepted, payload)
 }
 
 // not used - switched to gRPC call
